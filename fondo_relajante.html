@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fondo Relajante - Líneas Curvas</title>
+    <style>
+        /* Eliminamos márgenes y aseguramos que el fondo sea oscuro y sólido */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #121212; /* Gris muy oscuro para evitar fatiga */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #555;
+            font-family: sans-serif;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .content {
+            z-index: 10;
+            pointer-events: none; /* Permite que los clics pasen al fondo si fuera necesario */
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="content">
+        <h1>Modo Descanso Visual</h1>
+        <p>Líneas orgánicas en movimiento suave.</p>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let lines = [];
+        const lineCount = 20; // Número de líneas curvas simultáneas
+
+        // Ajustar el tamaño del canvas a la ventana
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Clase para crear una línea curva animada
+        class Curve {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.yBase = Math.random() * height;
+                this.yOff = Math.random() * 100;
+                this.speed = 0.002 + Math.random() * 0.005;
+                this.width = 1 + Math.random() * 2;
+                // Color gris azulado muy tenue para no cansar la vista
+                this.color = `rgba(188, 19, 254, ${0.1 + Math.random() * 0.2})`; /*defcto 100,120,150*/
+            }
+
+            draw() {
+                this.yOff += this.speed;
+                ctx.beginPath();
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = this.width;
+
+                ctx.moveTo(0, this.yBase);
+
+                // Dibujamos la curva usando senos para un movimiento fluido
+                for (let x = 0; x < width; x += 20) {
+                    const y = this.yBase + Math.sin(x * 0.002 + this.yOff) * 100;
+                    ctx.lineTo(x, y);
+                }
+
+                ctx.stroke();
+
+                // Si la línea "sale" mucho de foco, la reiniciamos suavemente
+                if (this.yOff > 100) this.reset();
+            }
+        }
+
+        // Crear las líneas iniciales
+        for (let i = 0; i < lineCount; i++) {
+            lines.push(new Curve());
+        }
+
+        function animate() {
+            // Limpiamos con el color sólido del fondo
+            ctx.fillStyle = '#121212';
+            ctx.fillRect(0, 0, width, height);
+
+            lines.forEach(line => line.draw());
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
